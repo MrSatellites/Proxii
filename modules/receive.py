@@ -35,7 +35,7 @@ class Receive:
                                 s2 = Send(self.password, self.interface, "", 1, self.username, self._send_window, False)
                                 
                                 # Check if normal messages
-                                if dcms == "EOC" and self.messages[0] == "msg":
+                                if dcms == "␃" and self.messages[0] == "msg":
                                     username = self.messages[-1]
                                     if username == "System": # System Messages only
                                         self.window.addstr(f"System << {' '.join(self.messages[1:-1])}\n", curses.A_DIM | curses.A_ITALIC)
@@ -43,11 +43,11 @@ class Receive:
                                         message = ''.join(self.messages[1:-1])
                                         message = message.replace("0_0", " ")
                                         self.window.addstr(f"{username} << {message}\n", curses.A_ITALIC | curses.A_BOLD)
-                                        s2.send(f"msg Message Delivered to {self.username} System EOC")
+                                        s2.send(f"msg Message Delivered to {self.username} System ␃")
                                     self.messages = [] 
                                     
                                 # Check if file 
-                                elif dcms == "EOP" and self.messages[0] != "msg": 
+                                elif dcms == "␄" and self.messages[0] != "msg": 
                                         username = self.messages[-1]
                                         datas = "".join(self.messages[1:-1])
                                         self.window.addstr(f"{username} << Received File {self.messages[0]} {len(datas)}\n", curses.A_ITALIC | curses.A_BOLD)
@@ -56,15 +56,13 @@ class Receive:
                                         
                                         if decoded == b"":
                                             self.window.addstr(f"Decompression Failed")
-                                            s2.send(f"msg Error Delivering file to {self.username} System EOC")
+                                            s2.send(f"msg Error Delivering file to {self.username} System ␃")
                                             
                                         else:
                                             with open(f"files/{self.messages[0]}", "wb") as f:
                                                 f.write(decoded) 
-                                            s2.send(f"msg File Delivered to {self.username} System EOC")
+                                            s2.send(f"msg File Delivered to {self.username} System ␃")
                                         self.messages = []
                                 else:
                                     self.messages.append(dcms)
                                 self.window.refresh()
-                                # self.messages = []
-                         
