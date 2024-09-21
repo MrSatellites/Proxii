@@ -1,5 +1,5 @@
 import random, string, hashlib, os
-letters = string.printable
+letters = string.printable + "␄␃"
 
 def secret(pswd):
     """
