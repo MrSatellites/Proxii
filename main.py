@@ -8,15 +8,23 @@ from modules.receive import Receive
 from modules.congested import *
 from modules.send import Send
 import argparse as ap
+from tkinter.filedialog import askopenfilename
 
 parser = ap.ArgumentParser(description="Proxii")
 parser.add_argument("-i", "--interface", help="Interface to use", required=True)
+parser.add_argument("-u", "--username", help="Username to use", required=True)
+parser.add_argument("-p", "--secret-key", help="Password to use", required=True)
+parser.add_argument("-s", "--ssid", help="SSID to use")
+
+# Parse the arguments
 args = parser.parse_args()
 interface = args.interface
+ssid = args.ssid if args.ssid else ""
+username = args.username
+secret_key = args.secret_key
 
-print("Welcome to Proxii v2.0\n" + "─"*25 + "\n")
-username = input("[?] Enter your username : ")
-secret_key = input("[?] Enter the secret key : ")
+date = datetime.now().strftime("%H:%M:%S")
+
 def check_size(term) -> None:
     if os.get_terminal_size()[0] < 60 or os.get_terminal_size()[1] < 25:
         term.clear()
@@ -25,18 +33,19 @@ def check_size(term) -> None:
         exit()
 
 def main(term) -> None:
-    #Variable initialization
-    channel = 1 # Channel to use
-    ssid = "" # SSID Used for Probe Requests
-    usut = "" # User input
-    date = datetime.now().strftime("%H:%M:%S")
-    check_size(term)
+    user_input = ""
+    channel = 1
     # Prepare the screen
+    check_size(term)
     term.clear()
     height, width = term.getmaxyx()
     receive_window = term.subwin(height // 2, width, 0, 0)
     send_window = term.subwin(2, width, height - 2, 0)
-    def interface_info(receive_window, send_window):
+    
+    def _interface(receive_window, send_window):
+        """
+        interface Display
+        """
         lines = [f"          Welcome to Proxii v2.0",
                 f"          /{'─'*30}\\",
                 f"        Username   : {username}",
@@ -51,16 +60,17 @@ def main(term) -> None:
         receive_window.refresh()
         send_window.scrollok(True)
         receive_window.scrollok(True)
-        send_window.addstr(0, 0,f"{"─" * (receive_window.getmaxyx()[1]-29)}[ Channel : {channel} ({usage(channel, interface)})% ]────\n{date} >> ", curses.A_BOLD)
+        send_window.addstr(0, 0,f"{"─" * (receive_window.getmaxyx()[1]-29)}[ Channel : {channel} ({usage(channel, interface) })% ]────\n{date} >> ", curses.A_BOLD)
 
     # Start the chat
     r = Receive(secret_key, interface, username, receive_window, send_window)
     threading.Thread(target=r.listen).start()
     
     s = Send(secret_key, interface, ssid, random.randint(1, 100), username, send_window)
-    s.send(f"msg New User '{username}' has joined the chat! System EOC")
-    interface_info(receive_window, send_window)
-    # Shitty Loop but it work
+    s.send(f"msg New User '{username}' has joined the chat! System ␃")
+    _interface(receive_window, send_window)
+    
+    # Shitty Loop but it works
     while True:
         if curses.is_term_resized(height, width):
             check_size(term)
@@ -69,51 +79,60 @@ def main(term) -> None:
             send_window = term.subwin(2, width, height - 2, 0)
             term.clear()
             term.refresh()
-            interface_info(receive_window, send_window)
-            
+            _interface(receive_window, send_window)
             send_window.addstr(0, 0,f"{"─" * (receive_window.getmaxyx()[1]-29)}[ Channel : {channel} ({usage(channel, interface)})% ]────\n{date} >> ", curses.A_BOLD)
             send_window.refresh()
+            
         key = send_window.getch()
         if key == ord('\n'):
-            if usut.strip():
-                normalstrings = [x for x in usut if x in string.printable]
-                usut = "".join(normalstrings)
+            if user_input.strip():
+                normalstrings = [x for x in user_input if x in string.printable]
+                user_input = "".join(normalstrings)
                 # Checking for basic commands
-                if usut[:2] == "!c": 
-                    if usut[2:].isdigit():
-                        channel = int(usut[2:])
+                try:
+                    isfile = re.findall(r"^(.+)\/([^/\s]+\.[a-zA-Z0-9]+)(?=\s*$)", user_input)[0]
+                except:
+                    isfile = False
+                    
+                if user_input[:2] == "!c": 
+                    if user_input[3:7].isdigit():
+                        channel = int(user_input[2:])
                         os.system(f"sudo iw {interface} set channel {channel}")
-                        s.send(f"msg {username} jumped on channel : {channel} EOC")
+                        s.send(f"msg {username} jumped on channel : {channel} System ␃")
                     else:
                         receive_window.addstr("Invalid channel number.\n", curses.A_BOLD)
 
-                elif usut[:5] == "!info":
+                elif user_input[:5] == "!info":
                     receive_window.addstr(f"Informations : \n\n  Channel : {channel} ({usage(channel, interface)})% \n  Interface : {interface}\n  Secret Key : {secret_key}\n  Username : {username}\n  MAC : {random_mac(secret_key, username)}\n\n", curses.A_BOLD)
                     
                 # Checking for files
-                elif re.findall(r"^(.+)\/([^/]+)$", usut):
-                    usutmp = spacer(file_encoder(usut.replace("'", ""))) # File encoder
-                    text = f"{usut.split("/")[-1].replace(" ", "_")} {usutmp} {username} EOP" 
+                elif isfile:
+                    file = f"{isfile[0]}/{isfile[1]}"
+                    usutmp = spacer(file_encoder(file.replace("'", ""))) # File encoder
+                    text = f"{file.split("/")[-1].replace(" ", "_")} {usutmp} {username} ␄" 
                     send_window.addstr(0, 0,f"{"─" * (receive_window.getmaxyx()[1]-29)}[ Channel : {channel} ({usage(channel, interface)})% ]────\n{date} >> Sending file (Estimated time: {int((len(usutmp)*0.000231))} seconds)...", curses.A_BOLD)
                     send_window.refresh()
                     s.send(text)
-                else:
-                    usuta = usut.replace(" ", "0_0") 
-                    number = random.randint(5, 50) #haha idk i think 5,50 is a good range
-                    usutb = " ".join([usuta[i:i+number] for i in range(0, len(usuta), number)]) # Just to make word lenght unpredictable
-                    text = f"msg {usutb} {username} EOC"
-                    s.send(text) 
-                    receive_window.addstr(f"{username} >> {usutb}\n")
                     
-                usut = ""
+                else:
+                    user_input_a = user_input.replace(" ", "0_0") 
+                    number = random.randint(5, 50) #haha idk i think 5,50 is a good range
+                    user_input_b = " ".join([user_input_a[i:i+number] for i in range(0, len(user_input_a), number)]) # Just to make word lenght unpredictable
+                    text = f"msg {user_input_b} {username} ␃"
+                    s.send(text) 
+                    receive_window.addstr(f"{username} >> {user_input}\n")
+                    
+                    
+                user_input = ""
                 send_window.move(0, 0)
                 send_window.clrtoeol()
                 send_window.addstr(0, 0, f"{"─" * (receive_window.getmaxyx()[1]-29)}[ Channel : {channel} ({usage(channel, interface)})% ]────\n{date} >> ", curses.A_BOLD)
-
                 receive_window.refresh()
+                send_window.refresh()
+
         elif key == 127: 
-            if len(usut) > 0:
-                usut = usut[:-1]
+            if len(user_input) > 0:
+                user_input = user_input[:-1]
                 y, x = send_window.getyx()
                 if x > 0:
                     send_window.move(y, x - 1)
@@ -122,7 +141,7 @@ def main(term) -> None:
                     send_window.move(y - 1, maxx - 1)
                 send_window.delch()
         else:
-            usut += chr(key)
+            user_input += chr(key)
             send_window.addch(key)
 
 
