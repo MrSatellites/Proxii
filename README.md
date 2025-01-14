@@ -104,7 +104,7 @@ Probe requests are basicly a packet askin "Are you here" by requesting wifi from
 
 Probe requests structure : 
 
-![alt https://www.researchgate.net/publication/343716779/](images/struct.png)
+![alt https://www.researchgate.net/publication/343716779/](https://www.researchgate.net/publication/343716779/figure/fig2/AS:925865621872641@1597754974686/Basic-structure-of-80211ac-probe-request-frame.png)
 
 ---
 Proxii constructs custom probe request frames that look like regular ones in order to be discrete to sniffers.
