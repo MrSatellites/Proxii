@@ -3,21 +3,32 @@
 ### Table of Contents
 
 - [Proxii Documentation](#proxii-documentation)
-  - [Table of Contents](#table-of-contents)
+    - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
-- [Installation](#installation)
-  - [Dependencies](#dependencies)
-    - [Ubuntu](#ubuntu)
-    - [Fedora](#fedora)
-    - [Arch Linux](#arch-linux)
+- [Context](#context)
   - [Manual Installation](#manual-installation)
+    - [Dependencies](#dependencies)
+      - [Ubuntu](#ubuntu)
+      - [Fedora](#fedora)
+      - [Arch Linux](#arch-linux)
+    - [Installation](#installation)
 - [Running Proxii](#running-proxii)
-- [Troubleshooting](#troubleshooting)
-  - [Common Issues](#common-issues)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
+- [TODO](#todo)
+- [Technical Details](#technical-details)
+  - [Code Structure and Readability](#code-structure-and-readability)
+- [Skill Set](#skill-set)
+    - [Summary about Probe Requests](#summary-about-probe-requests)
+    - [So, How do we transfer data ?](#so-how-do-we-transfer-data-)
   
 # Introduction
 
 Proxii is a **Linux Only** **secure**, **proximity chat**, using the *802.11 WLAN protocol*, it use a creative way to make custom Probe Requests to transmit messages between devices in a local area.
+
+# Context
+
+In a world where privacy is disappearing, Proxii offers a secure and discrete way to communicate with others close person. And because im a student, i wanted to make a project that is useful and fun to use, and also to learn new things about networking and security. 
 
 ## Manual Installation
 
@@ -96,6 +107,15 @@ If you have any issues with Proxii, you can open an issue on the GitHub reposito
 
 # Technical Details
 
+## Code Structure and Readability
+The code is structured in a way that is easy to read and understand  The code is divided into multiple files, each with a specific purpose. The code is also well-documented as you can see here and i put much comments explaining the purpose of each function and class.
+
+# Skill Set
+- Python
+- Networking
+- Security
+- Linux
+  
 ### Summary about Probe Requests
 Probe requests are basicly a packet askin "Are you here" by requesting wifi from their SSID (Name) that will answer with a probe response, making network discovery faster.
 
