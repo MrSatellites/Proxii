@@ -104,7 +104,7 @@ If you have any issues with Proxii, you can open an issue on the GitHub reposito
 - [ ] Adding Chat Discovery (discover users on same chat at join)
 - [ ] Sending multiple files, directory
 - [ ] Making Web interface
-
+- [ ] Adding Voice Chat
 # Technical Details
 
 ## Code Structure and Readability
